@@ -1,36 +1,24 @@
 #include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
  
 /* Can run 'make menuconfig' to choose the GPIO to blink,
    or you can edit the following line and set a number here.
 */
-#define BLINK_GPIO CONFIG_BLINK_GPIO
- 
-void blink_task(void *pvParameter)
+#define GPIO_LED_NUM 4
+
+void app_main(void)
 {
-    /* Configure the IOMUX register for pad BLINK_GPIO (some pads are
-       muxed to GPIO on reset already, but some default to other
-       functions and need to be switched to GPIO. Consult the
-       Technical Reference for a list of pads and their default
-       functions.)
-    */
-    gpio_pad_select_gpio(BLINK_GPIO);
-    /*dedcdd*/
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-    while(1) {
-        /* Blink off (output low) */
-        gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        /* Blink on (output high) */
-        gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
- 
-void app_main()
-{
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    gpio_config_t blink;
+    
+    blink.pin_bit_mask=(1ULL << GPIO_LED_NUM);
+    blink.mode=GPIO_MODE_INPUT_OUTPUT;
+    blink.pull_up_en=0;
+    blink.pull_down_en=0;
+    blink.intr_type=GPIO_PIN_INTR_DISABLE;
+
+    gpio_config(&blink);
+
+    gpio_set_level(GPIO_LED_NUM,1);
+    
 }
